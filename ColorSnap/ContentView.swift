@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = ColorPickerViewModel()
+    @EnvironmentObject var viewModel: ColorPickerViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -70,9 +70,7 @@ struct ContentView: View {
     private var footerView: some View {
         HStack {
             Button("Settings") {
-                if let appDelegate = NSApp.delegate as? AppDelegate {
-                    appDelegate.showSettings()
-                }
+                AppDelegate.shared?.showSettings()
             }
             .buttonStyle(.borderless)
             .font(.system(size: 12))
@@ -102,4 +100,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(ColorPickerViewModel())
 }

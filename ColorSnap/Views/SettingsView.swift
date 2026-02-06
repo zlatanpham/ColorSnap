@@ -1,3 +1,4 @@
+import KeyboardShortcuts
 import SwiftUI
 
 struct SettingsView: View {
@@ -16,13 +17,15 @@ struct SettingsView: View {
                     Label("About", systemImage: "info.circle")
                 }
         }
-        .frame(width: 400, height: 200)
+        .frame(width: 400, height: 250)
     }
 
     private var generalTab: some View {
         Form {
             Toggle("Launch at Login", isOn: $launchManager.isEnabled)
                 .toggleStyle(.switch)
+
+            KeyboardShortcuts.Recorder("Pick Color Shortcut:", name: .pickColor)
 
             Picker("Default Format", selection: $defaultFormat) {
                 ForEach(ColorFormat.allCases) { format in

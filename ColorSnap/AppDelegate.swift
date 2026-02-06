@@ -1,21 +1,28 @@
 import AppKit
 import Combine
+import KeyboardShortcuts
 import SwiftUI
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    static private(set) var shared: AppDelegate?
+
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
+    private var settingsWindow: NSWindow?
     private var eventMonitor: Any?
     private let clipboardMonitor = ClipboardMonitorService()
     private var cancellables = Set<AnyCancellable>()
     private var appearanceObservation: NSKeyValueObservation?
+    let viewModel = ColorPickerViewModel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppDelegate.shared = self
         setupStatusItem()
         setupPopover()
         setupEventMonitor()
         setupClipboardMonitor()
+        setupGlobalShortcut()
     }
 
     private func setupStatusItem() {
@@ -32,7 +39,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover = NSPopover()
         popover?.contentSize = NSSize(width: 320, height: 480)
         popover?.behavior = .transient
-        popover?.contentViewController = NSHostingController(rootView: ContentView())
+        popover?.contentViewController = NSHostingController(
+            rootView: ContentView().environmentObject(viewModel)
+        )
     }
 
     private func setupEventMonitor() {
@@ -59,6 +68,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { @MainActor in
                     self?.updateStatusBarIcon(clipboardColor: self?.clipboardMonitor.clipboardColor)
                 }
+            }
+        }
+    }
+
+    private func setupGlobalShortcut() {
+        KeyboardShortcuts.onKeyUp(for: .pickColor) { [weak self] in
+            Task { @MainActor in
+                await self?.viewModel.pickColor()
             }
         }
     }
@@ -127,20 +144,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showSettings() {
+        popover?.close()
+        openSettingsWindow()
+    }
+
+    private func openSettingsWindow() {
+        if let settingsWindow = settingsWindow {
+            settingsWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let settingsView = SettingsView()
+        let hostingController = NSHostingController(rootView: settingsView)
+
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "ColorSnap Settings"
+        window.styleMask = [.titled, .closable]
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.delegate = self
+        self.settingsWindow = window
+
+        window.makeKeyAndOrderFront(nil)
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+    }
 
-        if #available(macOS 14.0, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            if NSApp.windows.filter({ $0.isVisible }).isEmpty {
-                NSApp.setActivationPolicy(.accessory)
-            }
-        }
+    func windowWillClose(_ notification: Notification) {
+        settingsWindow = nil
+        NSApp.setActivationPolicy(.accessory)
     }
 
     func applicationWillTerminate(_ notification: Notification) {

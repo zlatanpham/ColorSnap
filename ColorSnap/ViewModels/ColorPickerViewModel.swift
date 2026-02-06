@@ -24,6 +24,7 @@ class ColorPickerViewModel: ObservableObject {
     }
 
     func pickColor() async {
+        guard !isPicking else { return }
         isPicking = true
         guard let nsColor = await pickerService.pickColor() else {
             isPicking = false
