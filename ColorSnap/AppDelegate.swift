@@ -159,7 +159,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(contentViewController: hostingController)
-        window.title = "ColorSnap Settings"
+        window.title = "Settings"
         window.styleMask = [.titled, .closable]
         window.center()
         window.isReleasedWhenClosed = false
