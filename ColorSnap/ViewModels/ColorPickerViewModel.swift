@@ -31,6 +31,7 @@ class ColorPickerViewModel: ObservableObject {
         }
         let picked = PickedColor(nsColor: nsColor)
         currentColor = picked
+        copyToClipboard(color: picked, format: defaultFormat)
         await storageService.saveColor(picked)
         colorHistory = await storageService.loadColors()
         isPicking = false
