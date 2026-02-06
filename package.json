@@ -1,7 +1,7 @@
 {
-  "name": "macapptemplate",
+  "name": "colorsnap",
   "version": "1.0.0",
-  "description": "macOS menu bar app template",
+  "description": "macOS menu bar color picker",
   "scripts": {
     "build:dmg": "node scripts/build-dmg.js",
     "prepare": "husky"

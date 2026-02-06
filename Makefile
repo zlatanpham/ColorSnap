@@ -1,7 +1,7 @@
 .PHONY: build test clean archive open dmg generate help
 
 # Project settings
-PROJECT_NAME = MacAppTemplate
+PROJECT_NAME = ColorSnap
 SCHEME = $(PROJECT_NAME)
 CONFIGURATION = Release
 BUILD_DIR = build

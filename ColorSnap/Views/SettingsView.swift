@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var launchManager = LaunchAtLoginManager()
+    @AppStorage("defaultColorFormat") private var defaultFormat: String = ColorFormat.hex.rawValue
 
     var body: some View {
         TabView {
@@ -23,7 +24,11 @@ struct SettingsView: View {
             Toggle("Launch at Login", isOn: $launchManager.isEnabled)
                 .toggleStyle(.switch)
 
-            // Add more settings here as needed
+            Picker("Default Format", selection: $defaultFormat) {
+                ForEach(ColorFormat.allCases) { format in
+                    Text(format.rawValue).tag(format.rawValue)
+                }
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -31,26 +36,23 @@ struct SettingsView: View {
 
     private var aboutTab: some View {
         VStack(spacing: 16) {
-            Image(systemName: "app.fill")
+            Image(systemName: "eyedropper")
                 .font(.system(size: 48))
                 .foregroundColor(.accentColor)
 
-            Text("MacAppTemplate")
+            Text("ColorSnap")
                 .font(.headline)
 
             Text("Version \(appVersion)")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            Text("A macOS menu bar app template")
+            Text("A macOS menu bar color picker")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
 
             Spacer()
-
-            Link("View on GitHub", destination: URL(string: "https://github.com")!)
-                .font(.caption)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)

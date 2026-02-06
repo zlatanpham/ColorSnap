@@ -1,64 +1,71 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
-const PROJECT_NAME = 'MacAppTemplate';
-const BUILD_DIR = 'build';
+const PROJECT_NAME = "ColorSnap";
+const BUILD_DIR = "build";
 const ARCHIVE_PATH = path.join(BUILD_DIR, `${PROJECT_NAME}.xcarchive`);
-const APP_PATH = path.join(ARCHIVE_PATH, 'Products', 'Applications', `${PROJECT_NAME}.app`);
+const APP_PATH = path.join(
+  ARCHIVE_PATH,
+  "Products",
+  "Applications",
+  `${PROJECT_NAME}.app`,
+);
 const DMG_PATH = path.join(BUILD_DIR, `${PROJECT_NAME}.dmg`);
-const TEMP_DMG_DIR = path.join(BUILD_DIR, 'dmg-temp');
+const TEMP_DMG_DIR = path.join(BUILD_DIR, "dmg-temp");
 
 function run(command, options = {}) {
-    console.log(`Running: ${command}`);
-    try {
-        execSync(command, { stdio: 'inherit', ...options });
-    } catch (error) {
-        console.error(`Failed to execute: ${command}`);
-        process.exit(1);
-    }
+  console.log(`Running: ${command}`);
+  try {
+    execSync(command, { stdio: "inherit", ...options });
+  } catch (error) {
+    console.error(`Failed to execute: ${command}`);
+    process.exit(1);
+  }
 }
 
 function main() {
-    console.log(`\n📦 Building DMG for ${PROJECT_NAME}...\n`);
+  console.log(`\n📦 Building DMG for ${PROJECT_NAME}...\n`);
 
-    // Check if archive exists
-    if (!fs.existsSync(APP_PATH)) {
-        console.error(`❌ App not found at ${APP_PATH}`);
-        console.error('Run "make archive" first to create the archive.');
-        process.exit(1);
-    }
+  // Check if archive exists
+  if (!fs.existsSync(APP_PATH)) {
+    console.error(`❌ App not found at ${APP_PATH}`);
+    console.error('Run "make archive" first to create the archive.');
+    process.exit(1);
+  }
 
-    // Clean up previous DMG
-    if (fs.existsSync(DMG_PATH)) {
-        fs.unlinkSync(DMG_PATH);
-    }
+  // Clean up previous DMG
+  if (fs.existsSync(DMG_PATH)) {
+    fs.unlinkSync(DMG_PATH);
+  }
 
-    // Create temp directory for DMG contents
-    if (fs.existsSync(TEMP_DMG_DIR)) {
-        fs.rmSync(TEMP_DMG_DIR, { recursive: true });
-    }
-    fs.mkdirSync(TEMP_DMG_DIR, { recursive: true });
-
-    // Copy app to temp directory
-    console.log('📋 Copying app bundle...');
-    run(`cp -R "${APP_PATH}" "${TEMP_DMG_DIR}/"`);
-
-    // Create symbolic link to Applications folder
-    console.log('🔗 Creating Applications symlink...');
-    run(`ln -s /Applications "${TEMP_DMG_DIR}/Applications"`);
-
-    // Create DMG
-    console.log('💿 Creating DMG...');
-    run(`hdiutil create -volname "${PROJECT_NAME}" -srcfolder "${TEMP_DMG_DIR}" -ov -format UDZO "${DMG_PATH}"`);
-
-    // Clean up
-    console.log('🧹 Cleaning up...');
+  // Create temp directory for DMG contents
+  if (fs.existsSync(TEMP_DMG_DIR)) {
     fs.rmSync(TEMP_DMG_DIR, { recursive: true });
+  }
+  fs.mkdirSync(TEMP_DMG_DIR, { recursive: true });
 
-    console.log(`\n✅ DMG created successfully: ${DMG_PATH}\n`);
+  // Copy app to temp directory
+  console.log("📋 Copying app bundle...");
+  run(`cp -R "${APP_PATH}" "${TEMP_DMG_DIR}/"`);
+
+  // Create symbolic link to Applications folder
+  console.log("🔗 Creating Applications symlink...");
+  run(`ln -s /Applications "${TEMP_DMG_DIR}/Applications"`);
+
+  // Create DMG
+  console.log("💿 Creating DMG...");
+  run(
+    `hdiutil create -volname "${PROJECT_NAME}" -srcfolder "${TEMP_DMG_DIR}" -ov -format UDZO "${DMG_PATH}"`,
+  );
+
+  // Clean up
+  console.log("🧹 Cleaning up...");
+  fs.rmSync(TEMP_DMG_DIR, { recursive: true });
+
+  console.log(`\n✅ DMG created successfully: ${DMG_PATH}\n`);
 }
 
 main();

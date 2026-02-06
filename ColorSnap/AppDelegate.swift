@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
@@ -16,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "app.fill", accessibilityDescription: "App")
+            button.image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: "ColorSnap")
             button.action = #selector(togglePopover)
             button.target = self
         }
@@ -24,7 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupPopover() {
         popover = NSPopover()
-        popover?.contentSize = NSSize(width: 350, height: 500)
+        popover?.contentSize = NSSize(width: 320, height: 480)
         popover?.behavior = .transient
         popover?.contentViewController = NSHostingController(rootView: ContentView())
     }

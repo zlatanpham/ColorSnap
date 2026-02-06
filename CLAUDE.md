@@ -18,39 +18,44 @@ make dmg       # Create DMG installer (requires archive first)
 
 ## Architecture
 
-This is a macOS menu bar application using **MVVM** with SwiftUI:
+ColorSnap is a macOS menu bar color picker using **MVVM** with SwiftUI:
 
-- **Models/** - Pure data structures (Codable, Hashable)
-- **Views/** - Stateless SwiftUI presentation components
-- **ViewModels/** - @MainActor state management with @Published properties
-- **Services/** - Actor-based business logic (thread-safe)
+- **Models/** - `ColorFormat` (enum: hex/rgb/hsl/hsb), `PickedColor` (stores RGBA components, Codable)
+- **Views/** - `ColorPreviewView` (swatch + format rows), `ColorHistoryView`, `ColorRowView`, `SettingsView`
+- **ViewModels/** - `ColorPickerViewModel` (@MainActor state management)
+- **Services/** - `ColorPickerService` (NSColorSampler wrapper), `ColorStorageService` (UserDefaults persistence)
+- **Extensions/** - `NSColor+Formats` (color format conversion)
 
 ### Key Patterns
 
-**Actor-based concurrency:** `APIService` is an actor ensuring thread-safe network operations without manual locking.
+**Actor-based concurrency:** `ColorPickerService` and `ColorStorageService` are actors ensuring thread-safe operations.
 
-**In-memory caching:** `MainViewModel` includes a Cache struct with 5-minute TTL. Cache is checked before API calls; force refresh is available.
+**NSColorSampler integration:** Color picking uses macOS native `NSColorSampler` wrapped in `withCheckedContinuation` for async/await.
+
+**UserDefaults persistence:** Color history stored as JSON in UserDefaults, max 100 colors, newest-first ordering.
 
 **Menu bar integration:** `AppDelegate` manages NSStatusItem + NSPopover lifecycle. Uses `.accessory` activation policy (no Dock icon), switches to `.regular` only when Settings window is shown.
 
 ### Key Files
 
 - `AppDelegate.swift` - Menu bar setup, popover management, global click monitoring
-- `MainViewModel.swift` - Central state management with caching
-- `APIService.swift` - Actor-based HTTP client with custom APIError enum
+- `ColorPickerViewModel.swift` - Central state management (pick, copy, history)
+- `ColorPickerService.swift` - NSColorSampler async wrapper
+- `ColorStorageService.swift` - UserDefaults-based color history persistence
+- `NSColor+Formats.swift` - HEX, RGB, HSL, HSB format conversion
 - `LaunchAtLoginManager.swift` - ServiceManagement integration for auto-launch
 
 ## Configuration
 
 - **Info.plist:** `LSUIElement=true` hides app from Dock
 - **Entitlements:** App sandbox enabled + network client access
-- **project.yml:** XcodeGen configuration (bundle ID: `com.example.MacAppTemplate`)
+- **project.yml:** XcodeGen configuration (bundle ID: `com.example.ColorSnap`)
 
 ## Git Hooks
 
 Husky enforces conventional commits:
 
 - `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`
-- Example: `feat(settings): add auto-launch toggle`
+- Example: `feat(picker): add HSL format support`
 
 Prettier runs on staged `*.{js,json,md}` files via lint-staged.
