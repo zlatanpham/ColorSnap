@@ -63,7 +63,7 @@ archive: generate
 		-scheme $(SCHEME) \
 		-configuration $(CONFIGURATION) \
 		-archivePath $(ARCHIVE_PATH) \
-		CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO \
+		CODE_SIGN_IDENTITY="-" \
 		$(VERSION_FLAGS) \
 		archive
 

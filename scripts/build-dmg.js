@@ -55,6 +55,12 @@ function main() {
   console.log("📋 Copying app bundle...");
   run(`cp -R "${APP_PATH}" "${TEMP_DMG_DIR}/"`);
 
+  // Re-sign app with ad-hoc identity and hardened runtime
+  console.log("🔏 Signing app bundle...");
+  run(
+    `codesign --force --deep -s - --options runtime "${TEMP_DMG_DIR}/${PROJECT_NAME}.app"`,
+  );
+
   // Create symbolic link to Applications folder
   console.log("🔗 Creating Applications symlink...");
   run(`ln -s /Applications "${TEMP_DMG_DIR}/Applications"`);
