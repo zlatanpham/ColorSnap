@@ -19,39 +19,54 @@ struct ColorPreviewView: View {
             // Format rows
             VStack(spacing: 4) {
                 ForEach(ColorFormat.allCases) { format in
-                    formatRow(format)
+                    FormatRowView(
+                        format: format,
+                        formattedValue: color.formatted(format),
+                        isCopied: copiedFormat == format,
+                        onCopy: { onCopy(format) }
+                    )
                 }
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
     }
+}
 
-    private func formatRow(_ format: ColorFormat) -> some View {
+private struct FormatRowView: View {
+    let format: ColorFormat
+    let formattedValue: String
+    let isCopied: Bool
+    let onCopy: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
         HStack(spacing: 8) {
             Text(format.rawValue)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundColor(.secondary)
                 .frame(width: 32, alignment: .leading)
 
-            Text(color.formatted(format))
+            Text(formattedValue)
                 .font(.system(size: 12, design: .monospaced))
                 .lineLimit(1)
-                .textSelection(.enabled)
 
             Spacer()
 
-            Button(action: { onCopy(format) }) {
-                Image(systemName: copiedFormat == format ? "checkmark" : "doc.on.doc")
-                    .font(.system(size: 11))
-                    .foregroundColor(copiedFormat == format ? .green : .secondary)
-            }
-            .buttonStyle(.borderless)
-            .help("Copy \(format.rawValue)")
+            Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
+                .font(.system(size: 11))
+                .foregroundColor(isCopied ? .green : .secondary)
+                .frame(width: 16, height: 16)
+                .opacity(isHovered || isCopied ? 1 : 0)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(Color.primary.opacity(0.03))
+        .contentShape(Rectangle())
+        .onTapGesture { onCopy() }
+        .onHover { isHovered = $0 }
+        .background(isHovered ? Color.primary.opacity(0.06) : Color.primary.opacity(0.03))
         .cornerRadius(4)
+        .help("Copy \(format.rawValue)")
     }
 }
