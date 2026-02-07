@@ -6,6 +6,7 @@ const path = require("path");
 
 const PROJECT_NAME = "ColorSnap";
 const BUILD_DIR = "build";
+const VERSION = process.env.VERSION;
 const ARCHIVE_PATH = path.join(BUILD_DIR, `${PROJECT_NAME}.xcarchive`);
 const APP_PATH = path.join(
   ARCHIVE_PATH,
@@ -13,7 +14,10 @@ const APP_PATH = path.join(
   "Applications",
   `${PROJECT_NAME}.app`,
 );
-const DMG_PATH = path.join(BUILD_DIR, `${PROJECT_NAME}.dmg`);
+const DMG_FILENAME = VERSION
+  ? `${PROJECT_NAME}-${VERSION}.dmg`
+  : `${PROJECT_NAME}.dmg`;
+const DMG_PATH = path.join(BUILD_DIR, DMG_FILENAME);
 const TEMP_DMG_DIR = path.join(BUILD_DIR, "dmg-temp");
 
 function run(command, options = {}) {

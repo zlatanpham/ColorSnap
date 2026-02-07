@@ -8,6 +8,11 @@ BUILD_DIR = build
 ARCHIVE_PATH = $(BUILD_DIR)/$(PROJECT_NAME).xcarchive
 EXPORT_PATH = $(BUILD_DIR)/export
 
+# Optional: pass VERSION=x.y.z to inject version into the build
+ifdef VERSION
+VERSION_FLAGS = MARKETING_VERSION=$(VERSION) CURRENT_PROJECT_VERSION=$(VERSION)
+endif
+
 # Default target
 help:
 	@echo "Available targets:"
@@ -18,6 +23,9 @@ help:
 	@echo "  clean     - Clean build artifacts"
 	@echo "  archive   - Create release archive"
 	@echo "  dmg       - Create DMG installer"
+	@echo ""
+	@echo "Options:"
+	@echo "  VERSION=x.y.z  - Set version for archive/dmg targets"
 
 # Generate Xcode project
 generate:
@@ -55,8 +63,10 @@ archive: generate
 		-scheme $(SCHEME) \
 		-configuration $(CONFIGURATION) \
 		-archivePath $(ARCHIVE_PATH) \
+		CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO \
+		$(VERSION_FLAGS) \
 		archive
 
 # Create DMG
 dmg: archive
-	npm run build:dmg
+	VERSION=$(VERSION) npm run build:dmg
