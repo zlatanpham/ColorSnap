@@ -7,7 +7,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             headerView
 
-            if let color = viewModel.currentColor {
+            if viewModel.currentColor != nil {
                 Divider()
             }
 
