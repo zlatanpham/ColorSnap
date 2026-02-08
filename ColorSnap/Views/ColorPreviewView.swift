@@ -56,7 +56,7 @@ private struct FormatRowView: View {
 
             Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
                 .font(.system(size: 11))
-                .foregroundColor(isCopied ? .green : .secondary)
+                .foregroundColor(isCopied ? Color(nsColor: NSColor(red: 0x22/255.0, green: 0x87/255.0, blue: 0x3E/255.0, alpha: 1.0)) : .secondary)
                 .frame(width: 16, height: 16)
                 .opacity(isHovered || isCopied ? 1 : 0)
         }
