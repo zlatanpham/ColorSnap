@@ -213,7 +213,17 @@ private struct SettingsToggleRow: View {
 
 // MARK: - About Tab
 
+private enum UpdateCheckState {
+    case idle
+    case checking
+    case upToDate
+    case available(version: String, url: URL)
+    case error(String)
+}
+
 private struct AboutTabView: View {
+    @State private var updateState: UpdateCheckState = .idle
+
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
@@ -233,9 +243,89 @@ private struct AboutTabView: View {
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
 
+            updateSection
+
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var updateSection: some View {
+        Group {
+            switch updateState {
+            case .idle:
+                Button("Check for Updates") {
+                    checkForUpdate()
+                }
+                .buttonStyle(.bordered)
+
+            case .checking:
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Checking for updates…")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+
+            case .upToDate:
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("You're up to date!")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+
+            case let .available(version, url):
+                VStack(spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundColor(.blue)
+                        Text("Version \(version) is available")
+                            .font(.system(size: 12))
+                    }
+                    Button("Download Update") {
+                        NSWorkspace.shared.open(url)
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+            case let .error(message):
+                VStack(spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(message)
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                    }
+                    Button("Retry") {
+                        checkForUpdate()
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+        }
+        .frame(height: 50, alignment: .center)
+    }
+
+    private func checkForUpdate() {
+        updateState = .checking
+        Task {
+            do {
+                let status = try await UpdateService.shared.checkForUpdate()
+                switch status {
+                case .upToDate:
+                    updateState = .upToDate
+                case let .available(version, url):
+                    updateState = .available(version: version, url: url)
+                }
+            } catch {
+                updateState = .error(error.localizedDescription)
+            }
+        }
     }
 
     private var appVersion: String {
