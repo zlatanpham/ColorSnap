@@ -67,7 +67,6 @@ struct ContentView: View {
                 )
             }
         }
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var footerView: some View {
@@ -97,7 +96,6 @@ struct ContentView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(NSColor.windowBackgroundColor))
     }
 }
 
