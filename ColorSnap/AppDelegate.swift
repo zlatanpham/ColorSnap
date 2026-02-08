@@ -155,7 +155,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return
         }
 
-        let settingsView = SettingsView()
+        let settingsView = SettingsView(viewModel: viewModel)
         let hostingController = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(contentViewController: hostingController)

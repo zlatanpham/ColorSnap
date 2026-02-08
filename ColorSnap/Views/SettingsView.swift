@@ -19,6 +19,7 @@ private enum SettingsTab: String, CaseIterable {
 
 struct SettingsView: View {
     @State private var selectedTab: SettingsTab = .general
+    @ObservedObject var viewModel: ColorPickerViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +27,7 @@ struct SettingsView: View {
             Divider()
             tabContent
         }
-        .frame(width: 420, height: 460)
+        .frame(width: 420, height: 540)
     }
 
     // MARK: - Tab Bar
@@ -68,7 +69,7 @@ struct SettingsView: View {
     private var tabContent: some View {
         switch selectedTab {
         case .general:
-            GeneralTabView()
+            GeneralTabView(viewModel: viewModel)
         case .about:
             AboutTabView()
         }
@@ -80,6 +81,8 @@ struct SettingsView: View {
 private struct GeneralTabView: View {
     @StateObject private var launchManager = LaunchAtLoginManager()
     @AppStorage("defaultColorFormat") private var defaultFormat: String = ColorFormat.hex.rawValue
+    @ObservedObject var viewModel: ColorPickerViewModel
+    @State private var showClearConfirmation = false
 
     var body: some View {
         ScrollView {
@@ -121,6 +124,26 @@ private struct GeneralTabView: View {
                     }
                 }
 
+                if !viewModel.colorHistory.isEmpty {
+                    sectionDivider()
+
+                    settingsSection("HISTORY") {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Button(action: {
+                                showClearConfirmation = true
+                            }) {
+                                Text("Clear History")
+                                    .font(.system(size: 13))
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.red)
+                            Text("Remove all saved colors from history.")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
                 sectionDivider()
 
                 Spacer(minLength: 24)
@@ -137,6 +160,14 @@ private struct GeneralTabView: View {
                 .padding(.bottom, 16)
             }
             .padding(.horizontal, 40)
+        }
+        .alert("Clear History", isPresented: $showClearConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear", role: .destructive) {
+                Task { await viewModel.clearHistory() }
+            }
+        } message: {
+            Text("Are you sure you want to remove all \(viewModel.colorHistory.count) saved colors? This cannot be undone.")
         }
     }
 
@@ -213,5 +244,5 @@ private struct AboutTabView: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(viewModel: ColorPickerViewModel())
 }

@@ -71,21 +71,12 @@ struct ContentView: View {
 
     private var footerView: some View {
         HStack {
-            Button("Settings") {
+            Button("Settings...") {
                 AppDelegate.shared?.showSettings()
             }
             .buttonStyle(.borderless)
             .font(.system(size: 12))
             .keyboardShortcut(",", modifiers: .command)
-
-            Spacer()
-
-            Button("Clear") {
-                Task { await viewModel.clearHistory() }
-            }
-            .buttonStyle(.borderless)
-            .font(.system(size: 12))
-            .disabled(viewModel.colorHistory.isEmpty)
 
             Spacer()
 
